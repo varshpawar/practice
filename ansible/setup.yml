@@ -1,0 +1,90 @@
+---
+- name: Configure ci-master
+  hosts: master
+  become: yes
+
+  tasks:
+
+    - name: Update apt
+      apt:
+        update_cache: yes
+
+    - name: Install Java
+      apt:
+        name: openjdk-21-jdk
+        state: present
+
+    - name: Install Jenkins dependencies
+      apt:
+        name:
+          - wget
+          - gnupg
+          - fontconfig
+        state: present
+
+    - name: Download Jenkins WAR
+      get_url:
+        url: https://get.jenkins.io/war-stable/latest/jenkins.war
+        dest: /opt/jenkins.war
+
+    - name: Create Jenkins service
+      copy:
+        dest: /etc/systemd/system/jenkins.service
+        content: |
+          [Unit]
+          Description=Jenkins
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/bin/java -jar /opt/jenkins.war
+          Restart=always
+          User=root
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Start Jenkins
+      service:
+        name: jenkins
+        state: started
+        enabled: yes
+
+    - name: Verify Jenkins Service
+      service:
+        name: jenkins
+        state: started
+
+- name: Configure ci-agent
+  hosts: agent
+  become: yes
+
+  tasks:
+
+    - name: Update apt
+      apt:
+        update_cache: yes
+
+    - name: Install Java
+      apt:
+        name: openjdk-21-jdk
+        state: present
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Start Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Verify Docker Service
+      service:
+        name: docker
+        state: started

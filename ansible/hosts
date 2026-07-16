@@ -1,0 +1,5 @@
+[master]
+ci-master ansible_connection=local
+
+[agent]
+ci-agent ansible_host=172.31.20.30 ansible_user=ubuntu
