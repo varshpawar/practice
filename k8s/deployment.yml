@@ -14,6 +14,7 @@ spec:
     spec:
       containers:
       - name: food
-        image: food-app
+        image: food-app:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 80
